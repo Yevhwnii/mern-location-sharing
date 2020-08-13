@@ -1,15 +1,16 @@
 // Packages imports
-import React from 'react';
+import React from "react";
 import {
   BrowserRouter as Router,
   Route,
   Redirect,
   Switch,
-} from 'react-router-dom';
+} from "react-router-dom";
 // Local imports
-import MainNavigation from './shared/components/Navigation/MainNavigation';
-import Users from './user/containers/Users';
-import NewPlace from './places/containers/NewPlace';
+import MainNavigation from "./shared/components/Navigation/MainNavigation";
+import Users from "./user/containers/Users";
+import NewPlace from "./places/containers/NewPlace";
+import UserPlaces from "./places/containers/UserPlaces";
 
 // Root component
 const App = () => {
@@ -19,13 +20,16 @@ const App = () => {
       <MainNavigation />
       <main>
         <Switch>
-          <Route path='/places/new' exact>
-            <NewPlace />
-          </Route>
-          <Route path='/' exact>
+          <Route path="/" exact>
             <Users />
           </Route>
-          <Redirect to='/' />
+          <Route path="/:userId/places" exact>
+            <UserPlaces />
+          </Route>
+          <Route path="/places/new" exact>
+            <NewPlace />
+          </Route>
+          <Redirect to="/" />
         </Switch>
       </main>
     </Router>
