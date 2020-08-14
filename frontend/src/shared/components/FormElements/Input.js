@@ -1,8 +1,9 @@
 import React, { useReducer } from "react";
 
-import { validate } from "../../util/validators.js";
+import { validate } from "../../util/validators";
 import "./Input.css";
 
+// Reducer similar to Redux reducer, which receives action and updates the state
 const inputReducer = (state, action) => {
   switch (action.type) {
     case "CHANGE":
@@ -30,6 +31,7 @@ const Input = (props) => {
     isValid: false,
   }); // inital values of the state
   const changeHandler = (event) => {
+    // Dispatching CHANGE action
     dispatch({
       type: "CHANGE",
       val: event.target.value,
@@ -38,6 +40,7 @@ const Input = (props) => {
   };
 
   const touchHandler = () => {
+    // Dispatching TOUCH action
     dispatch({
       type: "TOUCH",
     });
