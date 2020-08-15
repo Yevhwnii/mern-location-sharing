@@ -1,6 +1,8 @@
 // Custom hooks are recognized by react and whenever state is changed
 // in such hooks, react rerenders component which uses this custom hook
 
+// Custom hooks should only be used directly in components, not in if blocks or any blocks
+
 import { useCallback, useReducer } from "react";
 
 const formReducer = (state, action) => {
@@ -21,6 +23,11 @@ const formReducer = (state, action) => {
           [action.inputId]: { value: action.value, isValid: action.isValid },
         },
         isValid: formIsValid,
+      };
+    case "SET_DATA":
+      return {
+        inputs: action.inputs,
+        isValid: action.formIsValid,
       };
     default:
       return state;
@@ -43,6 +50,13 @@ export const useForm = (initialInputs, initialFormValidity) => {
     [dispatch]
   );
 
+  const setFormData = useCallback((inputData, formValidity) => {
+    dispatch({
+      type: "SET_DATA",
+      inputs: inputData,
+      formIsValid: formValidity,
+    });
+  }, []);
   // We return state and pointer to inputHandler function
-  return [formState, inputHandler];
+  return [formState, inputHandler, setFormData];
 };
