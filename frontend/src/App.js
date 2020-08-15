@@ -9,6 +9,7 @@ import {
 // Local imports
 import MainNavigation from "./shared/components/Navigation/MainNavigation";
 import Users from "./user/containers/Users";
+import Auth from "./user/containers/Auth";
 import NewPlace from "./places/containers/NewPlace";
 import UserPlaces from "./places/containers/UserPlaces";
 import UpdatePlace from "./places/containers/UpdatePlace";
@@ -32,6 +33,9 @@ const App = () => {
           </Route>
           <Route path="/places/:placeId">
             <UpdatePlace />
+          </Route>
+          <Route path="/auth">
+            <Auth />
           </Route>
           <Redirect to="/" />
         </Switch>
