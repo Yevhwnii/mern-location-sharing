@@ -26,9 +26,9 @@ const Input = (props) => {
   // useReducer is more complex state managment than useState
   // allows to do something whenever state changes and so on
   const [inputState, dispatch] = useReducer(inputReducer, {
-    value: props.value || "",
+    value: props.initialValue || "",
     isTouched: false,
-    isValid: props.valid || false,
+    isValid: props.initialValid || false,
   }); // inital values of the state
 
   const { id, onInput } = props;
