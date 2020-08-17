@@ -12,7 +12,7 @@ const app = express();
 app.use(bodyParser.json());
 // Routes
 app.use("/api/places", placesRoutes);
-app.use("/api/user", usersRoutes);
+app.use("/api/users", usersRoutes);
 
 // 404 route
 app.use((req, res, next) => {
