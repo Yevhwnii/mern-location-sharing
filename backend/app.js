@@ -2,6 +2,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 // Local imports
+const HttpError = require("./models/http-error");
 const placesRoutes = require("./routes/places-routes");
 // Variables
 const app = express();
@@ -10,6 +11,12 @@ const app = express();
 app.use(bodyParser.json());
 // Routes
 app.use("/api/places", placesRoutes);
+
+// 404 route
+app.use((req, res, next) => {
+  const error = new HttpError("Could not find requested route", 404);
+  throw error;
+});
 
 // Default error handler
 app.use((err, req, res, next) => {
