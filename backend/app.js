@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 // Local imports
 const HttpError = require("./models/http-error");
 const placesRoutes = require("./routes/places-routes");
+const usersRoutes = require("./routes/users-routes");
 // Variables
 const app = express();
 
@@ -11,6 +12,7 @@ const app = express();
 app.use(bodyParser.json());
 // Routes
 app.use("/api/places", placesRoutes);
+app.use("/api/user", usersRoutes);
 
 // 404 route
 app.use((req, res, next) => {
