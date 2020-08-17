@@ -10,4 +10,6 @@ router.get("/user/:userId", placeController.getPlaceByUserId);
 // GET => /api/places/:pid => get list of all places
 router.get("/:placeId", placeController.getPlaceById);
 
+router.post("/", placeController.createPlace);
+
 module.exports = router;
