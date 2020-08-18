@@ -1,12 +1,14 @@
 // Package imports
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 // Local imports
 const HttpError = require("./models/http-error");
 const placesRoutes = require("./routes/places-routes");
 const usersRoutes = require("./routes/users-routes");
 // Variables
 const app = express();
+const MONGO_URI = process.env.MONGO_URI;
 
 // Middlewares
 app.use(bodyParser.json());
@@ -31,5 +33,14 @@ app.use((err, req, res, next) => {
     .json({ message: err.message || "Internal server error occured" });
 });
 // Spinning up the server
-console.log("Server is running on port 5000");
-app.listen(5000);
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log("MongoDb is connected");
+    app.listen(5000);
+    console.log("Server is running on port 5000");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
