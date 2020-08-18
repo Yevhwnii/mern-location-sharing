@@ -1,21 +1,28 @@
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 
 const Place = require("../models/place");
+const User = require("../models/user");
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
 
 exports.getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.userId;
 
-  const places = await Place.find({ creator: userId });
+  let userPlaces;
+  try {
+    userPlaces = await User.findById(userId).populate("places");
+  } catch (error) {
+    return next(new HttpError("Invalid user id", 422));
+  }
 
-  if (!places || places.length === 0) {
+  if (!userPlaces || userPlaces.places.length === 0) {
     return next(
       new HttpError("Could not find requested places for such user id", 404)
     );
   }
   res.json({
-    places: places.map((place) => place.toObject({ getters: true })),
+    places: userPlaces.places.map((place) => place.toObject({ getters: true })),
   });
 };
 
@@ -56,9 +63,29 @@ exports.createPlace = async (req, res, next) => {
       "https://upload.wikimedia.org/wikipedia/commons/1/10/Empire_State_Building_%28aerial_view%29.jpg",
   });
 
+  let user;
   try {
-    await createdPlace.save();
+    user = await User.findById(creator);
   } catch (error) {
+    return next(new HttpError("Creating place failed, try again", 500));
+  }
+
+  if (!user) {
+    return next(new HttpError("Could not find user for provided id", 404));
+  }
+
+  try {
+    // Allows to perform simualtenious queries and undo all of them if any fails
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    await createdPlace.save({ session: session });
+    // Push is moongose method which checks relationships and adds Object id
+    user.places.push(createdPlace);
+    await user.save({ session: session });
+    // Only if code gets here, changes are applied, roll back otherwise
+    await session.commitTransaction();
+  } catch (error) {
+    // May fail if server is down or if validation failed
     return next(new HttpError("Creating place failed, try again", 500));
   }
   res
@@ -100,13 +127,23 @@ exports.deletePlace = async (req, res, next) => {
 
   let placeToDelete;
   try {
-    placeToDelete = await Place.findById(placeId);
+    placeToDelete = await Place.findById(placeId).populate("creator");
   } catch (error) {
     return next(new HttpError("Could not delete a place", 500));
   }
 
+  if (!placeToDelete) {
+    return next(new HttpError("Could not find place", 404));
+  }
+
   try {
-    await placeToDelete.remove();
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    await placeToDelete.remove({ session: session });
+    // Reverse to push, it will remove place from user.places array
+    placeToDelete.creator.places.pull(placeToDelete);
+    await placeToDelete.creator.save({ session: session });
+    await session.commitTransaction();
   } catch (error) {
     return next(new HttpError("Could not delete a place", 500));
   }
