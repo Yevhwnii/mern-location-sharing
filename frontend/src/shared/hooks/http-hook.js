@@ -10,6 +10,8 @@ export const useHttpClient = () => {
 
   const sendRequest = useCallback(
     async (url, method = "GET", body = null, headers = {}) => {
+      // React will immedietly update UI since it detects that following code is async
+      // and thus it won`t batch this update in one cycle
       setIsLoading(true);
       const httpAbortCtrl = new AbortController();
       activeHttpRequests.current.push(httpAbortCtrl);
@@ -23,16 +25,21 @@ export const useHttpClient = () => {
         });
 
         const responseData = await response.json();
+        // Clear the request when it is sucessful
+        activeHttpRequests.current = activeHttpRequests.current.filter(
+          (reqCtrl) => reqCtrl !== httpAbortCtrl
+        );
         // false if we have 4** or 5** status code
         if (!response.ok) {
           throw new Error(responseData.message);
         }
-
+        setIsLoading(false);
         return responseData;
       } catch (error) {
         setError(error.message);
+        setIsLoading(false);
+        throw error;
       }
-      setIsLoading(false);
     },
     []
   );
