@@ -12,14 +12,13 @@ import Button from "../../shared/components/FormElements/Button";
 import { AuthContext } from "../../shared/context/auth-context";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import { useHttpClient } from "../../shared/hooks/http-hook";
 
 import "./Auth.css";
 
 const Auth = (props) => {
   const auth = useContext(AuthContext);
   const [isLoginMode, setIsLoginMode] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
   const [formState, inputHandler, setFormData] = useForm(
     {
       email: {
@@ -33,61 +32,46 @@ const Auth = (props) => {
     },
     false
   );
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
+  // Whenever you add async to the func it means that it alwayss will return a promise
   const authSubmitHandler = async (event) => {
     event.preventDefault();
-    setIsLoading(true);
 
     if (isLoginMode) {
       try {
-        // React will immedietly update UI since it detects that following code is async
-        // and thus it won`t batch this update in one cycle
-        const response = await fetch("http://localhost:5000/api/users/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        await sendRequest(
+          "http://localhost:5000/api/users/login",
+          "POST",
+          JSON.stringify({
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
           }),
-        });
-        const responseData = await response.json();
-        // false if we have 4** or 5** status code
-        if (!response.ok) {
-          throw new Error(responseData.message);
-        }
-        setIsLoading(false);
+          {
+            "Content-Type": "application/json",
+          }
+        );
         auth.login();
       } catch (error) {
-        setIsLoading(false);
-        setError(error.message || "Something went wrong...");
+        console.log(error);
       }
     } else {
       try {
-        // React will immedietly update UI since it detects that following code is async
-        // and thus it won`t batch this update in one cycle
-        const response = await fetch("http://localhost:5000/api/users/signup", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        await sendRequest(
+          "http://localhost:5000/api/users/signup",
+          "POST",
+          JSON.stringify({
             name: formState.inputs.name.value,
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
           }),
-        });
-        const responseData = await response.json();
-        // false if we have 4** or 5** status code
-        if (!response.ok) {
-          throw new Error(responseData.message);
-        }
-        setIsLoading(false);
+          {
+            "Content-Type": "application/json",
+          }
+        );
         auth.login();
       } catch (error) {
-        setIsLoading(false);
-        setError(error.message || "Something went wrong...");
+        console.log(error);
       }
     }
   };
@@ -118,12 +102,10 @@ const Auth = (props) => {
     }
     setIsLoginMode((prevMode) => !prevMode);
   };
-  const errorHandler = () => {
-    setError(null);
-  };
+
   return (
     <React.Fragment>
-      <ErrorModal error={error} onClear={errorHandler} />
+      <ErrorModal error={error} onClear={clearError} />
       <Card className="authentication">
         {isLoading && <LoadingSpinner asOverlay />}
         <h2>Login Required</h2>
@@ -158,7 +140,7 @@ const Auth = (props) => {
             errorText="Please enter a valid password (at least 5 characters)"
             onInput={inputHandler}
           />
-          <Button type="submite" disabled={!formState.isValid}>
+          <Button type="submit" disabled={!formState.isValid}>
             {isLoginMode ? "LOGIN" : "SIGNUP"}
           </Button>
         </form>
