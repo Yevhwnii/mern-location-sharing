@@ -38,6 +38,7 @@ export const useHttpClient = () => {
       } catch (error) {
         setError(error.message);
         setIsLoading(false);
+        // Throwing error here and wrap in try-catch in Auth.js so it does not go to auth.login()
         throw error;
       }
     },
