@@ -70,5 +70,8 @@ exports.login = async (req, res, next) => {
     return next(new HttpError("Invalid credentials", 422));
   }
 
-  res.json({ message: "Logged In" });
+  res.json({
+    message: "Logged In",
+    user: existingUser.toObject({ getters: true }),
+  });
 };
