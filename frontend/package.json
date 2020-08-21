@@ -17,6 +17,8 @@
   },
   "eslintConfig": {
     "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
       "react-app",
       "plugin:react-hooks/recommended"
     ]
@@ -34,6 +36,7 @@
     ]
   },
   "devDependencies": {
+    "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-react-hooks": "^4.0.8"
   }
 }
