@@ -9,6 +9,7 @@ import { useForm } from "../../shared/hooks/form-hook";
 import Card from "../../shared/components/UIElements/Card";
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
+import ImageUpload from "../../shared/components/FormElements/ImageUpload";
 import { AuthContext } from "../../shared/context/auth-context";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
@@ -37,6 +38,8 @@ const Auth = (props) => {
   // Whenever you add async to the func it means that it alwayss will return a promise
   const authSubmitHandler = async (event) => {
     event.preventDefault();
+
+    console.log(formState.inputs);
 
     if (isLoginMode) {
       try {
@@ -84,6 +87,7 @@ const Auth = (props) => {
         {
           ...formState.inputs,
           name: undefined,
+          image: undefined,
         },
         formState.inputs.email.isValid && formState.inputs.password.isValid
       );
@@ -94,6 +98,10 @@ const Auth = (props) => {
           ...formState.inputs,
           name: {
             value: "",
+            isValid: false,
+          },
+          image: {
+            value: null,
             isValid: false,
           },
         },
@@ -121,6 +129,9 @@ const Auth = (props) => {
               errorText="Please enter a name"
               onInput={inputHandler}
             />
+          )}
+          {!isLoginMode && (
+            <ImageUpload onInput={inputHandler} center id="image" />
           )}
           <Input
             id="email"
