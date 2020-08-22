@@ -2,6 +2,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const fs = require("fs");
+const path = require("path");
 // Local imports
 const HttpError = require("./models/http-error");
 const placesRoutes = require("./routes/places-routes");
@@ -12,6 +14,8 @@ const MONGO_URI = process.env.MONGO_URI;
 
 // Middlewares
 app.use(bodyParser.json());
+// Static image serving
+app.use("/uploads/images", express.static(path.join("uploads", "images")));
 
 // CORS handling middleware
 app.use((req, res, next) => {
@@ -35,6 +39,11 @@ app.use((req, res, next) => {
 
 // Default error handler
 app.use((err, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.file.path, (err) => {
+      console.log(err);
+    });
+  }
   // if response has already been sent
   if (res.headerSent) {
     return next(err);
@@ -43,8 +52,8 @@ app.use((err, req, res, next) => {
     .status(err.code || 500)
     .json({ message: err.message || "Internal server error occured" });
 });
-// Spinning up the server
 
+// Spinning up the server
 mongoose
   .connect(MONGO_URI)
   .then(() => {
