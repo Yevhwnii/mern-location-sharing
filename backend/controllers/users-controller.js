@@ -89,7 +89,7 @@ exports.login = async (req, res, next) => {
   }
 
   if (!existingUser) {
-    return next(new HttpError("Invalid credentials", 422));
+    return next(new HttpError("Invalid credentials", 403));
   }
 
   let isValidPassword = false;
