@@ -106,6 +106,10 @@ exports.updatePlace = async (req, res, next) => {
   if (!placeToUpdate) {
     return next(new HttpError("Could not find place for requested id", 404));
   }
+  // Authorization check
+  if (placeToUpdate.creator.toString() !== req.userData.userId) {
+    return next(new HttpError("You are not allowed to edit this place", 401));
+  }
 
   placeToUpdate.title = title;
   placeToUpdate.description = description;
@@ -134,6 +138,11 @@ exports.deletePlace = async (req, res, next) => {
 
   if (!placeToDelete) {
     return next(new HttpError("Could not find place", 404));
+  }
+
+  // Authorization check
+  if (!placeToDelete.creator.id !== req.userData.userId) {
+    return next(new HttpError("You are not allowed to delete this place", 401));
   }
 
   const imagePath = placeToDelete.image;
