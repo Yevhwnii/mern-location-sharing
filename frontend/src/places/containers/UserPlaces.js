@@ -9,7 +9,7 @@ const UserPlaces = (props) => {
   const userId = useParams().userId;
   const [loadedPlaces, setLoadedPlaces] = useState();
 
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+  const { isLoading, sendRequest } = useHttpClient();
 
   useEffect(() => {
     const fetchPlaces = async () => {
