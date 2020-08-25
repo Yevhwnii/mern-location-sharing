@@ -3,15 +3,21 @@ const { body } = require("express-validator");
 
 const placeController = require("../controllers/places-controller");
 const fileUpload = require("../middleware/file-upload");
+const checkAuth = require("../middleware/auth");
 
 const router = express.Router();
 
+// PUBLIC ROUTES
 // GET => /api/places/user/:pid => get list of places for user
 router.get("/user/:userId", placeController.getPlacesByUserId);
 
 // GET => /api/places/:pid => get list of all places
 router.get("/:placeId", placeController.getPlaceById);
 
+// PROTECTION MIDDLEWARE
+router.use(checkAuth);
+
+// PROTECTED ROUTES
 // POST => /api/place/:pid => create new place
 router.post(
   "/",
