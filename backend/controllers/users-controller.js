@@ -1,7 +1,13 @@
+require("dotenv").config();
+
 const { validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 const HttpError = require("../models/http-error");
+
+const JWTSECRET = process.env.SECRET_JWT;
 
 exports.getUsers = async (req, res, next) => {
   let users;
@@ -38,11 +44,18 @@ exports.signup = async (req, res, next) => {
     );
   }
 
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (error) {
+    return next(new HttpError("Could not create user", 500));
+  }
+
   const newUser = new User({
     name,
     email,
     image: req.file.path,
-    password,
+    password: hashedPassword,
     places: [],
   });
 
@@ -51,9 +64,17 @@ exports.signup = async (req, res, next) => {
   } catch (error) {
     return next(new HttpError("Saving new user failed", 500));
   }
+
+  let token;
+  token = jwt.sign({ userId: newUser.id, email: newUser.email }, JWTSECRET, {
+    expiresIn: "1h",
+  });
+
   res.status(201).json({
     message: "User has been created",
-    user: newUser.toObject({ getters: true }),
+    token,
+    userId: newUser.id,
+    email: newUser.email,
   });
 };
 
@@ -67,12 +88,34 @@ exports.login = async (req, res, next) => {
     return next(new HttpError("Loggin in failed, internal error", 500));
   }
 
-  if (!existingUser || existingUser.password !== password) {
+  if (!existingUser) {
     return next(new HttpError("Invalid credentials", 422));
   }
 
+  let isValidPassword = false;
+  try {
+    isValidPassword = await bcrypt.compare(password, existingUser.password);
+  } catch (error) {
+    return next(new HttpError("Login failed", 500));
+  }
+
+  if (!isValidPassword) {
+    return next(new HttpError("Invalid credentials", 422));
+  }
+
+  let token;
+  token = jwt.sign(
+    { userId: existingUser.id, email: existingUser.email },
+    JWTSECRET,
+    {
+      expiresIn: "1h",
+    }
+  );
+
   res.json({
     message: "Logged In",
-    user: existingUser.toObject({ getters: true }),
+    token,
+    userId: existingUser.id,
+    email: existingUser.email,
   });
 };
